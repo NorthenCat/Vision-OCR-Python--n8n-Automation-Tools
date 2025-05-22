@@ -58,13 +58,13 @@ To integrate with n8n workflows:
 
 1. Change the WEBHOOK_URL to your current WEBHOOK URL N8N
 
-For n8n template, please contact: faldzddi@gmail.com
+For n8n template, please contact: firstweb.id@gmail.com
 
 ## License
 
 MIT License
 
-Copyright (c) 2023 KK-OCR
+Copyright (c) 2025 FirstWeb
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
