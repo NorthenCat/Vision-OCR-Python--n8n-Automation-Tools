@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>OCR Upload with Vision</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-900">
+    <div class="max-w-6xl mx-auto p-4">
+      <h1 class="text-2xl font-bold mb-6">OCR Upload App</h1>
+      <div class="flex gap-2 mb-4">
+        <form method="POST" action="/reset">
+          <button
+            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            onclick="return confirm('Reset all data?')">
+            🔁 Reset
+          </button>
+        </form>
+        <form method="POST" action="/resend">
+          <button
+            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+            🔄 Resend Failed
+          </button>
+        </form>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Left Panel -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-xl font-semibold mb-4">Upload Photos</h2>
+          <form id="uploadForm" method="POST" enctype="multipart/form-data"
+            class="space-y-4">
+            <div id="dropArea"
+              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+              <div class="text-gray-500">
+                <svg class="mx-auto h-12 w-12 text-gray-400"
+                  stroke="currentColor" fill="none" viewBox="0 0 48 48"
+                  aria-hidden="true">
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                <p class="mt-1">Drag and drop photos here, or click to
+                  select</p>
+              </div>
+            </div>
+            <input id="fileInput" type="file" name="photos" multiple required
+              class="hidden">
+            <div id="selectedFiles" class="mt-3 space-y-2"></div>
+            <div id="filePreview" class="grid grid-cols-2 gap-2 mt-2"></div>
+            <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Upload</button>
+          </form>
+
+          <div class="mt-6">
+            <h3 class="text-lg font-medium mb-2">Pending Files</h3>
+            {% if pending_files %}
+            <ul class="space-y-2">
+              {% for file in pending_files %}
+              <li class="bg-yellow-100 p-2 rounded">
+                {{ file.filename }} <br>
+                <small class="text-red-600">{{ file.error }}</small>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-500">No pending files.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-xl font-semibold mb-4">Sent Files</h2>
+          {% if sent_files %}
+          <div class="space-y-4">
+            {% for file in sent_files %}
+            <div class="border rounded shadow-sm">
+              <button
+                class="w-full text-left px-4 py-2 bg-green-100 hover:bg-green-200 font-medium"
+                onclick="document.getElementById('text-{{ loop.index }}').classList.toggle('hidden')">
+                {{ file.filename }}
+              </button>
+              <div id="text-{{ loop.index }}" class="p-4 bg-gray-50 hidden">
+                <pre class="text-sm whitespace-pre-wrap">{{ file.text }}</pre>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-gray-500">No files sent yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFilesEl = document.getElementById('selectedFiles');
+        const filePreview = document.getElementById('filePreview');
+        const uploadForm = document.getElementById('uploadForm');
+        
+        // Store all selected files
+        let filesArray = [];
+        
+        // Open file dialog when clicking the drop area
+        dropArea.addEventListener('click', () => {
+          fileInput.click();
+        });
+        
+        // Prevent default behavior for drag events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        // Add visual feedback during drag
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropArea.addEventListener(eventName, () => {
+            dropArea.classList.add('border-blue-500', 'bg-blue-50');
+          });
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, () => {
+            dropArea.classList.remove('border-blue-500', 'bg-blue-50');
+          });
+        });
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const droppedFiles = dt.files;
+          handleFiles(droppedFiles);
+        });
+        
+        // Update when files are selected through the file input
+        fileInput.addEventListener('change', () => {
+          handleFiles(fileInput.files);
+        });
+        
+        // Process all files
+        function handleFiles(selectedFilesList) {
+          const newFiles = Array.from(selectedFilesList);
+          
+          // Filter for only images
+          const validFiles = newFiles.filter(file => {
+            const fileType = file.type.toLowerCase();
+            return fileType.startsWith('image/');
+          });
+          
+          // Add valid files to our array
+          filesArray = [...filesArray, ...validFiles];
+          
+          // Update UI
+          updateFileList();
+          updateFilePreview();
+          
+          // Update the form's FileList
+          updateFormFileList();
+        }
+        
+        // Update the list of selected files
+        function updateFileList() {
+          selectedFilesEl.innerHTML = '';
+          
+          filesArray.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex justify-between items-center bg-gray-50 p-2 rounded';
+            
+            const fileName = document.createElement('div');
+            fileName.className = 'truncate flex-1';
+            fileName.textContent = file.name;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'ml-2 text-red-500 hover:text-red-700';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.type = 'button';
+            removeBtn.addEventListener('click', () => removeFile(index));
+            
+            fileItem.appendChild(fileName);
+            fileItem.appendChild(removeBtn);
+            selectedFilesEl.appendChild(fileItem);
+          });
+        }
+        
+        // Remove a file from the array
+        function removeFile(index) {
+          filesArray.splice(index, 1);
+          updateFileList();
+          updateFilePreview();
+          updateFormFileList();
+        }
+        
+        // Update the file preview area
+        function updateFilePreview() {
+          filePreview.innerHTML = '';
+          
+          if (filesArray.length > 0) {
+            filesArray.slice(0, 4).forEach(file => {
+              if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const preview = document.createElement('div');
+                  preview.className = 'relative';
+                  preview.innerHTML = `
+                    <img src="${e.target.result}" class="h-24 w-full object-cover rounded">
+                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                      ${file.name}
+                    </div>
+                  `;
+                  filePreview.appendChild(preview);
+                }
+                reader.readAsDataURL(file);
+              } else {
+                const preview = document.createElement('div');
+                preview.className = 'bg-gray-200 h-24 flex items-center justify-center rounded';
+                preview.innerHTML = `
+                  <div class="text-center p-2">
+                    <div class="text-2xl">📄</div>
+                    <div class="text-xs truncate">${file.name}</div>
+                  </div>
+                `;
+                filePreview.appendChild(preview);
+              }
+            });
+            
+            // Show message if there are more files
+            if (filesArray.length > 4) {
+              const moreFiles = document.createElement('div');
+              moreFiles.className = 'bg-gray-100 h-24 flex items-center justify-center rounded';
+              moreFiles.innerHTML = `<div class="text-center text-gray-600">+${filesArray.length - 4} more files</div>`;
+              filePreview.appendChild(moreFiles);
+            }
+          }
+        }
+        
+        // Update the form's FileList with the selected files
+        function updateFormFileList() {
+          // Create a DataTransfer object
+          const dataTransfer = new DataTransfer();
+          
+          // Add each file to it
+          filesArray.forEach(file => {
+            dataTransfer.items.add(file);
+          });
+          
+          // Set the file input's files to the DataTransfer files
+          fileInput.files = dataTransfer.files;
+        }
+        
+        // Handle form submission
+        uploadForm.addEventListener('submit', (e) => {
+          if (filesArray.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one file to upload');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
