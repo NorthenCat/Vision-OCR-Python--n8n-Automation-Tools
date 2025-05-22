@@ -14,6 +14,10 @@ The workflow:
 
 This component handles the OCR processing and communication with n8n for seamless data extraction and organization.
 
+## System Requirements
+
+**macOS Only**: This application uses Apple Vision for OCR processing and is therefore only compatible with macOS systems.
+
 ## Setup
 
 ### 1. Create a Virtual Environment
