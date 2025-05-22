@@ -1,6 +1,18 @@
 # KK-OCR Python Component
 
-This repository contains the Python component of the KK-OCR project.
+This repository contains the Python component of the KK-OCR project. The system performs OCR (Optical Character Recognition) on Indonesian Family Card (Kartu Keluarga) documents.
+
+## Overview
+
+The workflow:
+1. User uploads KK document images through the web interface
+2. The Python application extracts text from the images using OCR
+3. Extracted text is sent to an n8n workflow via webhook
+4. n8n processes the data, extracting specific fields from the KK document
+5. The data is organized and saved to Excel, with separate columns for each field (family member names, NIK numbers, birth information, etc.)
+6. Results can be downloaded or further processed through the n8n workflow
+
+This component handles the OCR processing and communication with n8n for seamless data extraction and organization.
 
 ## Setup
 
