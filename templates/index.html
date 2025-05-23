@@ -1,33 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OCR Upload with Vision</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: '#7dd3fc',
+                400: '#38bdf8',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+                800: '#075985',
+                900: '#0c4a6e',
+              },
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet">
   </head>
-  <body class="bg-gray-100 text-gray-900">
-    <div class="max-w-6xl mx-auto p-4">
-      <h1 class="text-2xl font-bold mb-6">OCR Upload App</h1>
-      <div class="flex gap-2 mb-4">
-        <form method="POST" action="/reset">
+  <body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen">
+    <div id="loadingOverlay"
+      class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center">
+      <div
+        class="text-center bg-white p-6 rounded-lg shadow-xl max-w-md mx-auto">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-primary-500 border-opacity-50 border-r-4 border-primary-500"></div>
+        <p class="text-gray-800 mt-4 text-lg font-semibold">Processing your
+          files...</p>
+        <p class="text-gray-500 text-sm mt-2">This might take a moment</p>
+      </div>
+    </div>
+
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <svg class="h-8 w-8 text-primary-500" viewBox="0 0 24 24"
+              fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7 3C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7Z"
+                stroke="currentColor" stroke-width="2" />
+              <path d="M9 9H15" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+              <path d="M9 13H15" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+              <path d="M9 17H13" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+            <h1 class="ml-2 text-xl font-semibold text-gray-800">OCR Vision
+              App</h1>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+      <div class="flex flex-wrap gap-2 mb-6">
+        <form id="resetForm" method="POST" action="/reset">
           <button
-            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             onclick="return confirm('Reset all data?')">
-            🔁 Reset
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Reset
           </button>
         </form>
-        <form method="POST" action="/resend">
+        <form id="resendForm" method="POST" action="/resend">
           <button
-            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
-            🔄 Resend Failed
+            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Resend Failed
           </button>
         </form>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Left Panel -->
-        <div class="bg-white rounded-xl shadow p-6">
-          <h2 class="text-xl font-semibold mb-4">Upload Photos</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <!-- Left Panel (Upload) - Takes 2/5 of the space on large screens -->
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
+          <h2
+            class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2 text-primary-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Upload Photos
+          </h2>
           <form id="uploadForm" method="POST" enctype="multipart/form-data"
             class="space-y-4">
             <div id="dropArea"
@@ -43,57 +131,132 @@
                 </svg>
                 <p class="mt-1">Drag and drop photos here, or click to
                   select</p>
+                <p class="text-xs text-gray-400 mt-1">Accepted formats: JPG,
+                  PNG, etc.</p>
               </div>
             </div>
-            <input id="fileInput" type="file" name="photos" multiple required
+            <input id="fileInput" type="file" name="photos" multiple
               class="hidden">
-            <div id="selectedFiles" class="mt-3 space-y-2"></div>
-            <div id="filePreview" class="grid grid-cols-2 gap-2 mt-2"></div>
+
+            <div id="filePreview"
+              class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2"></div>
+            <div id="selectedFiles"
+              class="mt-3 space-y-2 max-h-40 overflow-y-auto"></div>
+
             <button type="submit"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Upload</button>
+              class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
+              </svg>
+              Upload Files
+            </button>
           </form>
 
           <div class="mt-6">
-            <h3 class="text-lg font-medium mb-2">Pending Files</h3>
+            <h3
+              class="text-lg font-medium mb-2 text-gray-700 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 mr-2 text-amber-500" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Pending Files
+            </h3>
             {% if pending_files %}
-            <ul class="space-y-2">
+            <ul class="space-y-2 max-h-60 overflow-y-auto">
               {% for file in pending_files %}
-              <li class="bg-yellow-100 p-2 rounded">
-                {{ file.filename }} <br>
-                <small class="text-red-600">{{ file.error }}</small>
+              <li class="bg-amber-50 p-3 rounded-md border border-amber-200">
+                <div class="font-medium text-amber-800">{{ file.filename
+                  }}</div>
+                <small class="text-red-600 mt-1 block">{{ file.error }}</small>
               </li>
               {% endfor %}
             </ul>
             {% else %}
-            <p class="text-gray-500">No pending files.</p>
+            <p
+              class="text-gray-500 p-3 bg-gray-50 rounded-md border border-gray-200">No
+              pending files.</p>
             {% endif %}
           </div>
         </div>
 
-        <!-- Right Panel -->
-        <div class="bg-white rounded-xl shadow p-6">
-          <h2 class="text-xl font-semibold mb-4">Sent Files</h2>
+        <!-- Right Panel (Results) - Takes 3/5 of the space on large screens -->
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-3">
+          <h2
+            class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2 text-primary-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Processed Files
+          </h2>
           {% if sent_files %}
-          <div class="space-y-4">
+          <div class="space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
             {% for file in sent_files %}
-            <div class="border rounded shadow-sm">
+            <div
+              class="border border-gray-200 rounded-md shadow-sm overflow-hidden">
               <button
-                class="w-full text-left px-4 py-2 bg-green-100 hover:bg-green-200 font-medium"
+                class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 font-medium flex items-center justify-between transition-colors"
                 onclick="document.getElementById('text-{{ loop.index }}').classList.toggle('hidden')">
-                {{ file.filename }}
+                <span class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 mr-2 text-green-600" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ file.filename }}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-              <div id="text-{{ loop.index }}" class="p-4 bg-gray-50 hidden">
-                <pre class="text-sm whitespace-pre-wrap">{{ file.text }}</pre>
+              <div id="text-{{ loop.index }}"
+                class="p-4 bg-white border-t border-gray-200 hidden">
+                <pre
+                  class="text-sm whitespace-pre-wrap text-gray-700 font-mono bg-gray-50 p-3 rounded">{{ file.text }}</pre>
               </div>
             </div>
             {% endfor %}
           </div>
           {% else %}
-          <p class="text-gray-500">No files sent yet.</p>
+          <div
+            class="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12 mx-auto text-gray-400" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <p class="text-gray-500 mt-4">No files processed yet.</p>
+            <p class="text-gray-400 text-sm mt-2">Upload photos to see OCR
+              results here</p>
+          </div>
           {% endif %}
         </div>
       </div>
-    </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <p class="text-gray-500 text-sm text-center">OCR Apple Vision App ©
+          2025</p>
+      </div>
+    </footer>
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
@@ -102,6 +265,9 @@
         const selectedFilesEl = document.getElementById('selectedFiles');
         const filePreview = document.getElementById('filePreview');
         const uploadForm = document.getElementById('uploadForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const resetForm = document.getElementById('resetForm');
+        const resendForm = document.getElementById('resendForm');
         
         // Store all selected files
         let filesArray = [];
@@ -258,9 +424,23 @@
         
         // Handle form submission
         uploadForm.addEventListener('submit', (e) => {
+          e.preventDefault(); // Prevent form submission
           if (filesArray.length === 0) {
-            e.preventDefault();
             alert('Please select at least one file to upload');
+            return; // Stop form submission
+          }
+          console.log('Form is ready to be submitted.');
+          loadingOverlay.classList.remove('hidden'); // Show loading overlay
+          // Uncomment the next line to allow submission after debugging
+           uploadForm.submit();
+        });
+
+        // Handle resend form submission
+        resendForm.addEventListener('submit', (e) => {
+          e.preventDefault(); // Prevent form submission
+          if (confirm('Are you sure you want to resend failed files?')) {
+            loadingOverlay.classList.remove('hidden'); // Show loading overlay
+            resendForm.submit();
           }
         });
       });
