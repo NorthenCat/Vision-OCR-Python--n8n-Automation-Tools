@@ -10,7 +10,7 @@ import cv2
 app = Flask(__name__)
 UPLOAD_FOLDER = './uploads'
 DATA_FILE = 'data.json'
-N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/8eaf855b-ba32-4daa-ba99-2f25a4649b95'
+N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/8eaf855b-ba32-4daa-ba99-2f25a4649b95'
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -107,15 +107,16 @@ def upload_files():
                         else:
                             error_message = response.get('body', {}).get('message', 'Unknown error')
                             data['pending'].append({'filename': file['filename'], 'raw': file['raw'], 'error': f"HTTP {response.get('code', 'N/A')}, {error_message}"})
+                        save_data(data)
                 else:
                     # Handle unexpected response format
                     data['pending'].append({'filename': file['filename'], 'raw': file['raw'], 'error': 'Unexpected response format'})
+                    save_data(data)
             except Exception as e:
                 print(f"Error: {str(e)}")
                 data['pending'].append({'filename': file['filename'], 'raw': file['raw'], 'error': str(e)})
+                save_data(data)
 
-        # Save the updated data
-        save_data(data)
         return redirect('/')
 
     return render_template('index.html', pending_files=data['pending'], sent_files=data['sent'])
