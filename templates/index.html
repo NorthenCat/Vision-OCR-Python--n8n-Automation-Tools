@@ -68,6 +68,42 @@
             <h1 class="ml-2 text-xl font-semibold text-gray-800">OCR Vision
               App</h1>
           </div>
+          <div class="flex items-center space-x-3">
+            <a href="/ocr-test"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              OCR Test
+            </a>
+            <a href="/jsonl-formatter"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              JSONL
+            </a>
+            <a href="/excel-manager"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Excel Manager
+            </a>
+          </div>
         </div>
       </div>
     </nav>
@@ -143,6 +179,28 @@
             <div id="selectedFiles"
               class="mt-3 space-y-2 max-h-40 overflow-y-auto"></div>
 
+            <!-- Skip N8N Option -->
+            <div
+              class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <input type="checkbox" id="skipN8N" name="skip_n8n"
+                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+              <label for="skipN8N" class="ml-3 flex-1">
+                <span class="text-sm font-medium text-blue-900">Skip N8N
+                  Webhook</span>
+                <p class="text-xs text-blue-700 mt-1">
+                  Check this to save OCR results locally without sending to N8N
+                  webhook
+                </p>
+              </label>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-blue-500 ml-2" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+
             <button type="submit"
               class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
@@ -151,7 +209,7 @@
                   stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
               </svg>
-              Upload Files
+              <span id="uploadButtonText">Upload Files</span>
             </button>
           </form>
 
@@ -168,8 +226,10 @@
                 </svg>
                 Pending Files
               </span>
-              <span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                {% if pending_files %}{{ pending_files|length }}{% else %}0{% endif %}
+              <span
+                class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                {% if pending_files %}{{ pending_files|length }}{% else %}0{%
+                endif %}
               </span>
             </h3>
             {% if pending_files %}
@@ -205,7 +265,8 @@
               </svg>
               Processed Files
             </span>
-            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+            <span
+              class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
               {% if sent_files %}{{ sent_files|length }}{% else %}0{% endif %}
             </span>
           </h2>
@@ -278,9 +339,20 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const resetForm = document.getElementById('resetForm');
         const resendForm = document.getElementById('resendForm');
+        const skipN8NCheckbox = document.getElementById('skipN8N');
+        const uploadButtonText = document.getElementById('uploadButtonText');
         
         // Store all selected files
         let filesArray = [];
+        
+        // Handle skip N8N checkbox change
+        skipN8NCheckbox.addEventListener('change', () => {
+          if (skipN8NCheckbox.checked) {
+            uploadButtonText.textContent = 'Extract Text Only (Skip N8N)';
+          } else {
+            uploadButtonText.textContent = 'Upload Files';
+          }
+        });
         
         // Open file dialog when clicking the drop area
         dropArea.addEventListener('click', () => {

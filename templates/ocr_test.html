@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR API Test - OCR Vision App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: '#7dd3fc',
+                400: '#38bdf8',
+                500: '#0ea5e9',
+                600: '#0284c7',
+                700: '#0369a1',
+                800: '#075985',
+                900: '#0c4a6e',
+              },
+            },
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet">
+  </head>
+  <body class="bg-gray-50 text-gray-900 font-sans flex flex-col min-h-screen">
+    <div id="loadingOverlay"
+      class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center">
+      <div
+        class="text-center bg-white p-6 rounded-lg shadow-xl max-w-md mx-auto">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-primary-500 border-opacity-50 border-r-4 border-primary-500"></div>
+        <p class="text-gray-800 mt-4 text-lg font-semibold">Processing
+          OCR...</p>
+        <p class="text-gray-500 text-sm mt-2">Reading text from your image</p>
+      </div>
+    </div>
+
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <svg class="h-8 w-8 text-primary-500" viewBox="0 0 24 24"
+              fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7 3C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7Z"
+                stroke="currentColor" stroke-width="2" />
+              <path d="M9 9H15" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+              <path d="M9 13H15" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+              <path d="M9 17H13" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+            <h1 class="ml-2 text-xl font-semibold text-gray-800">OCR API
+              Test</h1>
+          </div>
+          <div class="flex items-center space-x-3">
+            <a href="/excel-manager"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-green-600 hover:text-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Excel Manager
+            </a>
+            <a href="/"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary-600 hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Main
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">OCR API Testing</h2>
+        <p class="text-gray-600">Test the OCR API endpoint by uploading an image
+          and viewing the extracted text.</p>
+        <div class="mt-3 bg-blue-50 border border-blue-200 rounded-md p-3">
+          <p class="text-sm text-blue-800">
+            <strong>API Endpoint:</strong> POST /api/ocr |
+            <strong>Parameter:</strong> image (file) |
+            <strong>No preprocessing applied</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Panel - Image Upload -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3
+            class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2 text-primary-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Upload Image for OCR
+          </h3>
+
+          <div id="dropArea"
+            class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors mb-4">
+            <div class="text-gray-500">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor"
+                fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              <p class="mt-1">Drag and drop an image here, or click to
+                select</p>
+              <p class="text-xs text-gray-400 mt-1">Supported formats: PNG, JPG,
+                JPEG, GIF, BMP, TIFF</p>
+            </div>
+          </div>
+
+          <input id="imageInput" type="file" accept="image/*" class="hidden">
+
+          <div id="imagePreview" class="mt-4 hidden">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Selected
+              Image:</h4>
+            <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+              <img id="previewImg"
+                class="max-w-full h-48 object-contain mx-auto rounded"
+                alt="Preview">
+              <p id="imageName"
+                class="text-sm text-gray-600 mt-2 text-center"></p>
+              <p id="imageSize" class="text-xs text-gray-500 text-center"></p>
+            </div>
+          </div>
+
+          <button id="testOcrBtn"
+            class="w-full mt-4 flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Test OCR API
+          </button>
+
+          <div class="mt-6">
+            <h4 class="text-md font-medium text-gray-700 mb-3">API
+              Information:</h4>
+            <div class="bg-gray-50 border border-gray-200 rounded-md p-3">
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li><strong>Method:</strong> POST</li>
+                <li><strong>Endpoint:</strong> /api/ocr</li>
+                <li><strong>Content-Type:</strong> multipart/form-data</li>
+                <li><strong>Parameter:</strong> image (file)</li>
+                <li><strong>Processing:</strong> No preprocessing applied</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel - OCR Results -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3
+            class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2 text-green-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            OCR Results
+          </h3>
+
+          <div id="resultsContainer">
+            <div id="noResults"
+              class="bg-gray-50 border border-gray-200 rounded-md p-8 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-12 w-12 mx-auto text-gray-400" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-gray-500 mt-4">No OCR results yet.</p>
+              <p class="text-gray-400 text-sm mt-2">Upload an image to see
+                extracted text here</p>
+            </div>
+
+            <div id="successResults" class="hidden">
+              <div
+                class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                <div class="flex">
+                  <svg class="h-5 w-5 text-green-400" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800"
+                      id="successMessage">OCR completed successfully!</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-2">Filename:</label>
+                  <div class="bg-gray-50 border border-gray-200 rounded-md p-2">
+                    <code id="resultFilename"
+                      class="text-sm text-gray-800"></code>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-2">Extracted
+                    Text:</label>
+                  <div
+                    class="bg-gray-50 border border-gray-200 rounded-md p-4 max-h-96 overflow-y-auto">
+                    <pre id="resultText"
+                      class="text-sm whitespace-pre-wrap text-gray-800 font-mono"></pre>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-2">Raw API
+                    Response:</label>
+                  <div
+                    class="bg-gray-900 border border-gray-700 rounded-md p-4 max-h-48 overflow-y-auto">
+                    <pre id="rawResponse"
+                      class="text-xs text-green-400 font-mono"></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="errorResults" class="hidden">
+              <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                <div class="flex">
+                  <svg class="h-5 w-5 text-red-400" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">Error occurred
+                      during OCR processing</p>
+                    <div class="mt-2">
+                      <pre id="errorMessage"
+                        class="text-sm text-red-700 whitespace-pre-wrap"></pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <p class="text-gray-500 text-sm text-center">OCR API Test - OCR Vision
+          App © 2025</p>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const dropArea = document.getElementById('dropArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const imageName = document.getElementById('imageName');
+        const imageSize = document.getElementById('imageSize');
+        const testOcrBtn = document.getElementById('testOcrBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // Result elements
+        const noResults = document.getElementById('noResults');
+        const successResults = document.getElementById('successResults');
+        const errorResults = document.getElementById('errorResults');
+        const successMessage = document.getElementById('successMessage');
+        const resultFilename = document.getElementById('resultFilename');
+        const resultText = document.getElementById('resultText');
+        const rawResponse = document.getElementById('rawResponse');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let selectedFile = null;
+
+        // File upload handlers
+        dropArea.addEventListener('click', () => {
+          imageInput.click();
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropArea.addEventListener(eventName, () => {
+            dropArea.classList.add('border-blue-500', 'bg-blue-50');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropArea.addEventListener(eventName, () => {
+            dropArea.classList.remove('border-blue-500', 'bg-blue-50');
+          });
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          handleFile(files[0]);
+        });
+
+        imageInput.addEventListener('change', () => {
+          if (imageInput.files.length > 0) {
+            handleFile(imageInput.files[0]);
+          }
+        });
+
+        function handleFile(file) {
+          if (!file) return;
+
+          // Validate file type
+          const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp', 'image/tiff'];
+          if (!allowedTypes.includes(file.type.toLowerCase())) {
+            alert('Please upload a valid image file (PNG, JPG, JPEG, GIF, BMP, TIFF)');
+            return;
+          }
+
+          selectedFile = file;
+
+          // Show preview
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            imageName.textContent = file.name;
+            imageSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+            imagePreview.classList.remove('hidden');
+            testOcrBtn.disabled = false;
+          };
+          reader.readAsDataURL(file);
+
+          // Reset results
+          showNoResults();
+        }
+
+        // OCR Test handler
+        testOcrBtn.addEventListener('click', () => {
+          if (!selectedFile) {
+            alert('Please select an image first');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('image', selectedFile);
+
+          loadingOverlay.classList.remove('hidden');
+
+          fetch('/api/ocr', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            loadingOverlay.classList.add('hidden');
+            
+            if (data.success) {
+              showSuccess(data);
+            } else {
+              showError(data.error || 'Unknown error occurred');
+            }
+          })
+          .catch(error => {
+            loadingOverlay.classList.add('hidden');
+            console.error('Error:', error);
+            showError(`Network error: ${error.message}`);
+          });
+        });
+
+        function showNoResults() {
+          noResults.classList.remove('hidden');
+          successResults.classList.add('hidden');
+          errorResults.classList.add('hidden');
+        }
+
+        function showSuccess(data) {
+          noResults.classList.add('hidden');
+          successResults.classList.remove('hidden');
+          errorResults.classList.add('hidden');
+
+          successMessage.textContent = data.message || 'OCR completed successfully!';
+          resultFilename.textContent = data.filename;
+          resultText.textContent = data.text || 'No text found in image';
+          rawResponse.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function showError(error) {
+          noResults.classList.add('hidden');
+          successResults.classList.add('hidden');
+          errorResults.classList.remove('hidden');
+
+          errorMessage.textContent = error;
+        }
+
+        // Initialize
+        showNoResults();
+      });
+    </script>
+  </body>
+</html>
