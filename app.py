@@ -395,7 +395,7 @@ def generate_jsonl():
             for excel_col, json_field in column_mapping.items():
                 if excel_col in df.columns:
                     value = row[excel_col]
-                    
+
                     # Handle special formatting
                     if json_field == 'RT' and pd.notna(value):
                         member[json_field] = f"{int(value):03d}"  # 3 digits
@@ -411,7 +411,15 @@ def generate_jsonl():
                         except:
                             member[json_field] = str(value) if pd.notna(value) else ""
                     elif pd.notna(value):
-                        member[json_field] = str(value)
+                        # Remove quotes for numeric ID fields if possible
+                        if json_field in ['NIK', 'NoKK']:
+                            # Remove Excel-style leading apostrophe (') or any single quotes
+                            s = str(value)
+                            # Remove all single quote characters but preserve other characters
+                            s = s.replace("'", "").strip()
+                            member[json_field] = s
+                        else:
+                            member[json_field] = str(value)
                     else:
                         member[json_field] = "" if json_field not in ['NoPaspor', 'NoKITAP'] else None
             
